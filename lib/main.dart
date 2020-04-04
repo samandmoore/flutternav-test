@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_stream_listener/flutter_stream_listener.dart';
 
 void main() => runApp(MyApp());
 
@@ -27,7 +30,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 fullscreenDialog: true,
-                builder: (_) => StepOneScreen(),
+                builder: (_) => Coordinator(),
               ),
             ),
           ),
@@ -37,7 +40,75 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+enum Step {
+  stepOne,
+  stepTwo,
+  stepThree,
+}
+
+typedef NextCallback = void Function({Step after});
+
+class Coordinator extends StatefulWidget {
+  @override
+  _CoordinatorState createState() => _CoordinatorState();
+}
+
+class _CoordinatorState extends State<Coordinator> {
+  final routingEventController = StreamController<Step>.broadcast();
+
+  @override
+  void dispose() {
+    routingEventController?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamListener(
+      stream: routingEventController.stream,
+      onData: (data) {
+        switch (data) {
+          case Step.stepOne:
+            pushStepTwo();
+            break;
+          case Step.stepTwo:
+            pushStepThree();
+            break;
+          case Step.stepThree:
+            Navigator.of(context).popUntil((route) => false);
+            break;
+        }
+      },
+      child: StepOneScreen(next),
+    );
+  }
+
+  void next({Step after}) {
+    routingEventController.add(after);
+  }
+
+  void pushStepTwo() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => StepTwoScreen(next),
+      ),
+    );
+  }
+
+  void pushStepThree() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => StepThreeScreen(next),
+      ),
+    );
+  }
+}
+
 class StepOneScreen extends StatelessWidget {
+  final NextCallback next;
+
+  const StepOneScreen(this.next);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,11 +119,7 @@ class StepOneScreen extends StatelessWidget {
         child: Center(
           child: OutlineButton(
             child: Text('Continue'),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => StepTwoScreen(),
-              ),
-            ),
+            onPressed: () => next(after: Step.stepOne),
           ),
         ),
       ),
@@ -61,6 +128,10 @@ class StepOneScreen extends StatelessWidget {
 }
 
 class StepTwoScreen extends StatelessWidget {
+  final NextCallback next;
+
+  const StepTwoScreen(this.next);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,11 +143,7 @@ class StepTwoScreen extends StatelessWidget {
           child: Container(
             child: OutlineButton(
               child: Text('Continue'),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => StepThreeScreen(),
-                ),
-              ),
+              onPressed: () => next(after: Step.stepTwo),
             ),
           ),
         ),
@@ -86,6 +153,10 @@ class StepTwoScreen extends StatelessWidget {
 }
 
 class StepThreeScreen extends StatelessWidget {
+  final NextCallback next;
+
+  const StepThreeScreen(this.next);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,9 +168,7 @@ class StepThreeScreen extends StatelessWidget {
           child: Container(
             child: OutlineButton(
               child: Text('Exit'),
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
+              onPressed: () => next(after: Step.stepThree),
             ),
           ),
         ),
