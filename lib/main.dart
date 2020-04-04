@@ -41,29 +41,31 @@ enum Step {
   stepThree,
 }
 
-typedef NextCallback = void Function({Step after});
-
 class Coordinator extends StatefulWidget {
-  static const String routeNameKey = 'coordinator123';
-
   static Route<void> route() {
     return MaterialPageRoute(
       fullscreenDialog: true,
-      settings: RouteSettings(name: Coordinator.routeNameKey),
       builder: (_) => Coordinator(),
     );
   }
 
-  String get routeName => routeNameKey;
-
   const Coordinator();
 
+  static CoordinatorState of(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<_InheritedCoordinator>()
+        .data;
+  }
+
   @override
-  _CoordinatorState createState() => _CoordinatorState();
+  CoordinatorState createState() => CoordinatorState();
 }
 
-class _CoordinatorState extends State<Coordinator> {
+class CoordinatorState extends State<Coordinator> {
   final routingEventController = StreamController<Step>.broadcast();
+  final navigatorKey = GlobalKey<NavigatorState>();
+
+  NavigatorState get coordinatorNavigator => navigatorKey.currentState;
 
   @override
   void dispose() {
@@ -73,22 +75,33 @@ class _CoordinatorState extends State<Coordinator> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamListener(
-      stream: routingEventController.stream,
-      onData: (data) {
-        switch (data) {
-          case Step.stepOne:
-            pushStepTwo();
-            break;
-          case Step.stepTwo:
-            pushStepThree();
-            break;
-          case Step.stepThree:
-            exit();
-            break;
-        }
-      },
-      child: StepOneScreen(next),
+    return _InheritedCoordinator(
+      data: this,
+      child: Navigator(
+        key: navigatorKey,
+        onGenerateRoute: (settings) {
+          return MaterialPageRoute(
+            settings: RouteSettings(isInitialRoute: true),
+            builder: (context) => StreamListener(
+              stream: routingEventController.stream,
+              onData: (data) {
+                switch (data) {
+                  case Step.stepOne:
+                    pushStepTwo();
+                    break;
+                  case Step.stepTwo:
+                    pushStepThree();
+                    break;
+                  case Step.stepThree:
+                    exit();
+                    break;
+                }
+              },
+              child: StepOneScreen(),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -97,43 +110,69 @@ class _CoordinatorState extends State<Coordinator> {
   }
 
   void exit() {
-    Navigator.of(context)
-        .popUntil((route) => route.settings.name == widget.routeName);
+    Navigator.of(context).maybePop();
   }
 
   void pushStepTwo() {
-    Navigator.of(context).push(
+    coordinatorNavigator.push(
       MaterialPageRoute(
-        builder: (_) => StepTwoScreen(next),
+        builder: (_) => StepTwoScreen(),
       ),
     );
   }
 
   void pushStepThree() {
-    Navigator.of(context).push(
+    coordinatorNavigator.push(
       MaterialPageRoute(
-        builder: (_) => StepThreeScreen(next),
+        builder: (_) => StepThreeScreen(),
       ),
     );
   }
 }
 
-class StepOneScreen extends StatelessWidget {
-  final NextCallback next;
+class _InheritedCoordinator extends InheritedWidget {
+  final CoordinatorState data;
 
-  const StepOneScreen(this.next);
+  @override
+  bool updateShouldNotify(InheritedWidget oldWidget) {
+    return true;
+  }
+
+  _InheritedCoordinator({
+    Key key,
+    Widget child,
+    this.data,
+  }) : super(key: key, child: child);
+}
+
+class CoordinatorCloseButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.close),
+      tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+      onPressed: () {
+        Coordinator.of(context).exit();
+      },
+    );
+  }
+}
+
+class StepOneScreen extends StatelessWidget {
+  const StepOneScreen();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Step one'),
+        actions: <Widget>[CoordinatorCloseButton()],
       ),
       body: SafeArea(
         child: Center(
           child: OutlineButton(
             child: Text('Continue'),
-            onPressed: () => next(after: Step.stepOne),
+            onPressed: () => Coordinator.of(context).next(after: Step.stepOne),
           ),
         ),
       ),
@@ -142,22 +181,22 @@ class StepOneScreen extends StatelessWidget {
 }
 
 class StepTwoScreen extends StatelessWidget {
-  final NextCallback next;
-
-  const StepTwoScreen(this.next);
+  const StepTwoScreen();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Step two'),
+        actions: <Widget>[CoordinatorCloseButton()],
       ),
       body: SafeArea(
         child: Center(
           child: Container(
             child: OutlineButton(
               child: Text('Continue'),
-              onPressed: () => next(after: Step.stepTwo),
+              onPressed: () =>
+                  Coordinator.of(context).next(after: Step.stepTwo),
             ),
           ),
         ),
@@ -167,9 +206,7 @@ class StepTwoScreen extends StatelessWidget {
 }
 
 class StepThreeScreen extends StatelessWidget {
-  final NextCallback next;
-
-  const StepThreeScreen(this.next);
+  const StepThreeScreen();
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +219,8 @@ class StepThreeScreen extends StatelessWidget {
           child: Container(
             child: OutlineButton(
               child: Text('Exit'),
-              onPressed: () => next(after: Step.stepThree),
+              onPressed: () =>
+                  Coordinator.of(context).next(after: Step.stepThree),
             ),
           ),
         ),
