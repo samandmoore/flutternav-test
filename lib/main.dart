@@ -8,73 +8,99 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      home: WillPopScope(
-        onWillPop: () async {
-          print('do not pop!');
-          return false;
-        },
-        child: MoScreen(),
+      home: HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Home'),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: OutlineButton(
+            child: Text('Start'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                fullscreenDialog: true,
+                builder: (_) => StepOneScreen(),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class MoScreen extends StatelessWidget {
+class StepOneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Navigator(
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/':
-            return MaterialPageRoute(
-              builder: (context) {
-                return Scaffold(
-                  body: SafeArea(
-                    child: Center(
-                      child: Column(
-                        children: <Widget>[
-                          Text('Mo'),
-                          OutlineButton(
-                            onPressed: () {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (_) => LarryScreen()),
-                                (route) => false,
-                              );
-                            },
-                            child: Text('Go'),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          default:
-            throw UnimplementedError();
-        }
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Step one'),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: OutlineButton(
+            child: Text('Continue'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => StepTwoScreen(),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
 
-class LarryScreen extends StatelessWidget {
+class StepTwoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Step two'),
+      ),
       body: SafeArea(
         child: Center(
-          child: Column(
-            children: <Widget>[
-              Text('Larry'),
-              OutlineButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('Back'),
-              )
-            ],
+          child: Container(
+            child: OutlineButton(
+              child: Text('Continue'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => StepThreeScreen(),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class StepThreeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Step three'),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            child: OutlineButton(
+              child: Text('Exit'),
+              onPressed: () {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+            ),
           ),
         ),
       ),
