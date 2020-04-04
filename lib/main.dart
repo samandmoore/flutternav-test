@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
         child: Center(
           child: OutlineButton(
             child: Text('Start'),
-            onPressed: () => Navigator.of(context).push(Coordinator.route()),
+            onPressed: () => Navigator.of(context).push(DummyFlow.route()),
           ),
         ),
       ),
@@ -35,37 +35,80 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-enum Step {
+enum DummyFlowStep {
   stepOne,
   stepTwo,
   stepThree,
 }
 
-class Coordinator extends StatefulWidget {
+class DummyFlow extends StatelessWidget {
   static Route<void> route() {
     return MaterialPageRoute(
       fullscreenDialog: true,
-      builder: (_) => Coordinator(),
+      builder: (_) => DummyFlow(),
     );
   }
 
-  const Coordinator();
+  @override
+  Widget build(BuildContext context) {
+    return Coordinator<DummyFlowStep>(
+      onNext: ({coordinator, after}) {
+        switch (after) {
+          case DummyFlowStep.stepOne:
+            pushStepTwo(coordinator);
+            break;
+          case DummyFlowStep.stepTwo:
+            pushStepThree(coordinator);
+            break;
+          case DummyFlowStep.stepThree:
+            coordinator.exit();
+            break;
+        }
+      },
+      initial: StepOneScreen(),
+    );
+  }
 
-  static CoordinatorState of(BuildContext context) {
+  void pushStepTwo(CoordinatorState<DummyFlowStep> coordinator) {
+    coordinator.push(
+      MaterialPageRoute(
+        builder: (_) => StepTwoScreen(),
+      ),
+    );
+  }
+
+  void pushStepThree(CoordinatorState<DummyFlowStep> coordinator) {
+    coordinator.push(
+      MaterialPageRoute(
+        builder: (_) => StepThreeScreen(),
+      ),
+    );
+  }
+}
+
+typedef NextCallback<T> = Function({CoordinatorState<T> coordinator, T after});
+
+class Coordinator<T> extends StatefulWidget {
+  final NextCallback<T> onNext;
+  final Widget initial;
+
+  const Coordinator({this.onNext, this.initial});
+
+  static CoordinatorState<T> of<T>(BuildContext context) {
     return context
         .dependOnInheritedWidgetOfExactType<_InheritedCoordinator>()
         .data;
   }
 
   @override
-  CoordinatorState createState() => CoordinatorState();
+  CoordinatorState<T> createState() => CoordinatorState<T>();
 }
 
-class CoordinatorState extends State<Coordinator> {
-  final routingEventController = StreamController<Step>.broadcast();
+class CoordinatorState<T> extends State<Coordinator<T>> {
+  final routingEventController = StreamController<T>.broadcast();
   final navigatorKey = GlobalKey<NavigatorState>();
 
-  NavigatorState get coordinatorNavigator => navigatorKey.currentState;
+  NavigatorState get navigator => navigatorKey.currentState;
 
   @override
   void dispose() {
@@ -85,19 +128,12 @@ class CoordinatorState extends State<Coordinator> {
             builder: (context) => StreamListener(
               stream: routingEventController.stream,
               onData: (data) {
-                switch (data) {
-                  case Step.stepOne:
-                    pushStepTwo();
-                    break;
-                  case Step.stepTwo:
-                    pushStepThree();
-                    break;
-                  case Step.stepThree:
-                    exit();
-                    break;
-                }
+                widget.onNext(
+                  coordinator: this,
+                  after: data,
+                );
               },
-              child: StepOneScreen(),
+              child: widget.initial,
             ),
           );
         },
@@ -105,7 +141,7 @@ class CoordinatorState extends State<Coordinator> {
     );
   }
 
-  void next({Step after}) {
+  void next({T after}) {
     routingEventController.add(after);
   }
 
@@ -113,20 +149,8 @@ class CoordinatorState extends State<Coordinator> {
     Navigator.of(context).maybePop();
   }
 
-  void pushStepTwo() {
-    coordinatorNavigator.push(
-      MaterialPageRoute(
-        builder: (_) => StepTwoScreen(),
-      ),
-    );
-  }
-
-  void pushStepThree() {
-    coordinatorNavigator.push(
-      MaterialPageRoute(
-        builder: (_) => StepThreeScreen(),
-      ),
-    );
+  Future<T> push<T>(Route<T> route) {
+    return navigator.push(route);
   }
 }
 
@@ -172,7 +196,8 @@ class StepOneScreen extends StatelessWidget {
         child: Center(
           child: OutlineButton(
             child: Text('Continue'),
-            onPressed: () => Coordinator.of(context).next(after: Step.stepOne),
+            onPressed: () =>
+                Coordinator.of(context).next(after: DummyFlowStep.stepOne),
           ),
         ),
       ),
@@ -188,6 +213,8 @@ class StepTwoScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Step two'),
+        // you can put this anywhere that you wanna be able to dismiss the
+        // current flow
         actions: <Widget>[CoordinatorCloseButton()],
       ),
       body: SafeArea(
@@ -196,7 +223,7 @@ class StepTwoScreen extends StatelessWidget {
             child: OutlineButton(
               child: Text('Continue'),
               onPressed: () =>
-                  Coordinator.of(context).next(after: Step.stepTwo),
+                  Coordinator.of(context).next(after: DummyFlowStep.stepTwo),
             ),
           ),
         ),
@@ -220,7 +247,7 @@ class StepThreeScreen extends StatelessWidget {
             child: OutlineButton(
               child: Text('Exit'),
               onPressed: () =>
-                  Coordinator.of(context).next(after: Step.stepThree),
+                  Coordinator.of(context).next(after: DummyFlowStep.stepThree),
             ),
           ),
         ),
