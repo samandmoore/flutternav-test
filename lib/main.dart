@@ -27,12 +27,7 @@ class HomeScreen extends StatelessWidget {
         child: Center(
           child: OutlineButton(
             child: Text('Start'),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                fullscreenDialog: true,
-                builder: (_) => Coordinator(),
-              ),
-            ),
+            onPressed: () => Navigator.of(context).push(Coordinator.route()),
           ),
         ),
       ),
@@ -49,6 +44,20 @@ enum Step {
 typedef NextCallback = void Function({Step after});
 
 class Coordinator extends StatefulWidget {
+  static const String routeNameKey = 'coordinator123';
+
+  static Route<void> route() {
+    return MaterialPageRoute(
+      fullscreenDialog: true,
+      settings: RouteSettings(name: Coordinator.routeNameKey),
+      builder: (_) => Coordinator(),
+    );
+  }
+
+  String get routeName => routeNameKey;
+
+  const Coordinator();
+
   @override
   _CoordinatorState createState() => _CoordinatorState();
 }
@@ -75,7 +84,7 @@ class _CoordinatorState extends State<Coordinator> {
             pushStepThree();
             break;
           case Step.stepThree:
-            Navigator.of(context).popUntil((route) => false);
+            exit();
             break;
         }
       },
@@ -85,6 +94,11 @@ class _CoordinatorState extends State<Coordinator> {
 
   void next({Step after}) {
     routingEventController.add(after);
+  }
+
+  void exit() {
+    Navigator.of(context)
+        .popUntil((route) => route.settings.name == widget.routeName);
   }
 
   void pushStepTwo() {
