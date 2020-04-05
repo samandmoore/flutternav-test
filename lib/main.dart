@@ -69,7 +69,7 @@ class DummyFlow extends StatelessWidget {
 
   Future<void> pushStepOne(CoordinatorState<DummyFlowEvent> coordinator) async {
     // simulate some sort of async loading operation for effect
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 1));
 
     coordinator.replace(
       MaterialPageRoute(

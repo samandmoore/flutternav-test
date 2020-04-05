@@ -3,9 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_stream_listener/flutter_stream_listener.dart';
 
-typedef NextCallback<T> = void Function(
-    {CoordinatorState<T> coordinator, T after});
-typedef StartCallback<T> = void Function({CoordinatorState<T> coordinator});
+typedef NextCallback<T> = void Function({
+  CoordinatorState<T> coordinator,
+  T after,
+});
+
+typedef StartCallback<T> = void Function({
+  CoordinatorState<T> coordinator,
+});
 
 class Coordinator<T> extends StatefulWidget {
   final NextCallback<T> onNext;
@@ -53,7 +58,7 @@ class CoordinatorState<T> extends State<Coordinator<T>> {
           onGenerateRoute: (settings) {
             return MaterialPageRoute(
               settings: RouteSettings(isInitialRoute: true),
-              builder: (context) => CoordinatorStart(
+              builder: (context) => _CoordinatorStart(
                 onStart: widget.onStart,
                 child: widget.child,
               ),
@@ -81,17 +86,17 @@ class CoordinatorState<T> extends State<Coordinator<T>> {
   }
 }
 
-class CoordinatorStart<T> extends StatefulWidget {
+class _CoordinatorStart<T> extends StatefulWidget {
   final Widget child;
   final StartCallback<T> onStart;
 
-  CoordinatorStart({this.child, this.onStart});
+  _CoordinatorStart({this.child, this.onStart});
 
   @override
   _CoordinatorStartState<T> createState() => _CoordinatorStartState<T>();
 }
 
-class _CoordinatorStartState<T> extends State<CoordinatorStart<T>> {
+class _CoordinatorStartState<T> extends State<_CoordinatorStart<T>> {
   @override
   void initState() {
     super.initState();
