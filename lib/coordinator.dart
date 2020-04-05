@@ -3,13 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_stream_listener/flutter_stream_listener.dart';
 
-typedef NextCallback<T> = Function({CoordinatorState<T> coordinator, T after});
+typedef NextCallback<T> = void Function(
+    {CoordinatorState<T> coordinator, T after});
+typedef StartCallback<T> = void Function({CoordinatorState<T> coordinator});
 
 class Coordinator<T> extends StatefulWidget {
   final NextCallback<T> onNext;
-  final Widget initial;
+  final StartCallback<T> onStart;
+  final Widget child;
 
-  const Coordinator({this.onNext, this.initial});
+  const Coordinator({this.onNext, this.child, this.onStart});
 
   static CoordinatorState<T> of<T>(BuildContext context) {
     return context
@@ -37,23 +40,26 @@ class CoordinatorState<T> extends State<Coordinator<T>> {
   Widget build(BuildContext context) {
     return _InheritedCoordinator(
       data: this,
-      child: Navigator(
-        key: navigatorKey,
-        onGenerateRoute: (settings) {
-          return MaterialPageRoute(
-            settings: RouteSettings(isInitialRoute: true),
-            builder: (context) => StreamListener(
-              stream: routingEventController.stream,
-              onData: (data) {
-                widget.onNext(
-                  coordinator: this,
-                  after: data,
-                );
-              },
-              child: widget.initial,
-            ),
+      child: StreamListener(
+        stream: routingEventController.stream,
+        onData: (data) {
+          widget.onNext(
+            coordinator: this,
+            after: data,
           );
         },
+        child: Navigator(
+          key: navigatorKey,
+          onGenerateRoute: (settings) {
+            return MaterialPageRoute(
+              settings: RouteSettings(isInitialRoute: true),
+              builder: (context) => CoordinatorStart(
+                onStart: widget.onStart,
+                child: widget.child,
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -69,6 +75,33 @@ class CoordinatorState<T> extends State<Coordinator<T>> {
   Future<T> push<T>(Route<T> route) {
     return navigator.push(route);
   }
+
+  Future<T> replace<T>(Route<T> route) {
+    return navigator.pushReplacement(route);
+  }
+}
+
+class CoordinatorStart<T> extends StatefulWidget {
+  final Widget child;
+  final StartCallback<T> onStart;
+
+  CoordinatorStart({this.child, this.onStart});
+
+  @override
+  _CoordinatorStartState<T> createState() => _CoordinatorStartState<T>();
+}
+
+class _CoordinatorStartState<T> extends State<CoordinatorStart<T>> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => widget.onStart(coordinator: Coordinator.of<T>(context)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _InheritedCoordinator extends InheritedWidget {

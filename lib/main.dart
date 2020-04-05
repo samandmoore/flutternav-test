@@ -63,7 +63,17 @@ class DummyFlow extends StatelessWidget {
             break;
         }
       },
-      initial: StepOneScreen(),
+      onStart: ({coordinator}) => pushStepOne(coordinator),
+      child: LoadingScreen(),
+    );
+  }
+
+  void pushStepOne(CoordinatorState<DummyFlowStep> coordinator) {
+    coordinator.replace(
+      MaterialPageRoute(
+        settings: RouteSettings(isInitialRoute: true),
+        builder: (_) => StepOneScreen(),
+      ),
     );
   }
 
@@ -79,6 +89,19 @@ class DummyFlow extends StatelessWidget {
     coordinator.push(
       MaterialPageRoute(
         builder: (_) => StepThreeScreen(),
+      ),
+    );
+  }
+}
+
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
