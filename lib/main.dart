@@ -1,5 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutternav/coordinator.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'main.freezed.dart';
 
 void main() => runApp(MyApp());
 
@@ -33,10 +37,11 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-enum DummyFlowStep {
-  stepOne,
-  stepTwo,
-  stepThree,
+@freezed
+abstract class DummyFlowEvent with _$DummyFlowEvent {
+  const factory DummyFlowEvent.stepOne(String name) = _StepOne;
+  const factory DummyFlowEvent.stepTwo(int age) = _StepTwo;
+  const factory DummyFlowEvent.stepThree(double weight) = _StepThree;
 }
 
 class DummyFlow extends StatelessWidget {
@@ -49,26 +54,20 @@ class DummyFlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Coordinator<DummyFlowStep>(
+    return Coordinator<DummyFlowEvent>(
       onNext: ({coordinator, after}) {
-        switch (after) {
-          case DummyFlowStep.stepOne:
-            pushStepTwo(coordinator);
-            break;
-          case DummyFlowStep.stepTwo:
-            pushStepThree(coordinator);
-            break;
-          case DummyFlowStep.stepThree:
-            coordinator.exit();
-            break;
-        }
+        after.when(
+          stepOne: (name) => pushStepTwo(coordinator),
+          stepTwo: (age) => pushStepThree(coordinator),
+          stepThree: (weight) => coordinator.exit(),
+        );
       },
       onStart: ({coordinator}) => pushStepOne(coordinator),
       child: LoadingScreen(),
     );
   }
 
-  Future<void> pushStepOne(CoordinatorState<DummyFlowStep> coordinator) async {
+  Future<void> pushStepOne(CoordinatorState<DummyFlowEvent> coordinator) async {
     // simulate some sort of async loading operation for effect
     await Future.delayed(Duration(seconds: 2));
 
@@ -80,7 +79,7 @@ class DummyFlow extends StatelessWidget {
     );
   }
 
-  void pushStepTwo(CoordinatorState<DummyFlowStep> coordinator) {
+  void pushStepTwo(CoordinatorState<DummyFlowEvent> coordinator) {
     coordinator.push(
       MaterialPageRoute(
         builder: (_) => StepTwoScreen(),
@@ -88,7 +87,7 @@ class DummyFlow extends StatelessWidget {
     );
   }
 
-  void pushStepThree(CoordinatorState<DummyFlowStep> coordinator) {
+  void pushStepThree(CoordinatorState<DummyFlowEvent> coordinator) {
     coordinator.push(
       MaterialPageRoute(
         builder: (_) => StepThreeScreen(),
@@ -124,8 +123,9 @@ class StepOneScreen extends StatelessWidget {
         child: Center(
           child: OutlineButton(
             child: Text('Continue'),
-            onPressed: () =>
-                Coordinator.of(context).next(after: DummyFlowStep.stepOne),
+            onPressed: () => Coordinator.of(context).next(
+              after: DummyFlowEvent.stepOne('Sam'),
+            ),
           ),
         ),
       ),
@@ -150,8 +150,9 @@ class StepTwoScreen extends StatelessWidget {
           child: Container(
             child: OutlineButton(
               child: Text('Continue'),
-              onPressed: () =>
-                  Coordinator.of(context).next(after: DummyFlowStep.stepTwo),
+              onPressed: () => Coordinator.of(context).next(
+                after: DummyFlowEvent.stepTwo(32),
+              ),
             ),
           ),
         ),
@@ -174,8 +175,9 @@ class StepThreeScreen extends StatelessWidget {
           child: Container(
             child: OutlineButton(
               child: Text('Exit'),
-              onPressed: () =>
-                  Coordinator.of(context).next(after: DummyFlowStep.stepThree),
+              onPressed: () => Coordinator.of(context).next(
+                after: DummyFlowEvent.stepThree(140),
+              ),
             ),
           ),
         ),
