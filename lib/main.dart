@@ -28,9 +28,19 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: OutlineButton(
-            child: Text('Start'),
-            onPressed: () => Navigator.of(context).push(DummyFlow.route()),
-          ),
+              child: Text('Start'),
+              onPressed: () async {
+                final result = await Navigator.of(context)
+                    .push<PersonalInfo>(PersonalInfoFlow.route());
+                if (result != null) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      content: Text('Result: $result'),
+                    ),
+                  );
+                }
+              }),
         ),
       ),
     );
@@ -38,36 +48,65 @@ class HomeScreen extends StatelessWidget {
 }
 
 @freezed
-abstract class DummyFlowEvent with _$DummyFlowEvent {
-  const factory DummyFlowEvent.stepOne(String name) = _StepOne;
-  const factory DummyFlowEvent.stepTwo(int age) = _StepTwo;
-  const factory DummyFlowEvent.stepThree(double weight) = _StepThree;
+abstract class PersonalInfoFlowEvent with _$PersonalInfoFlowEvent {
+  const factory PersonalInfoFlowEvent.name(String name) = _Name;
+  const factory PersonalInfoFlowEvent.age(int age) = _Age;
+  const factory PersonalInfoFlowEvent.weight(double weight) = _Weight;
 }
 
-class DummyFlow extends StatelessWidget {
-  static Route<void> route() {
+@freezed
+abstract class PersonalInfoFlowState with _$PersonalInfoFlowState {
+  const factory PersonalInfoFlowState({
+    String name,
+    int age,
+    double weight,
+  }) = _State;
+}
+
+@freezed
+abstract class PersonalInfo with _$PersonalInfo {
+  const factory PersonalInfo(String name, int age, double weight) =
+      _PersonalInfo;
+}
+
+class PersonalInfoFlow extends StatelessWidget {
+  static Route<T> route<T>() {
     return MaterialPageRoute(
       fullscreenDialog: true,
-      builder: (_) => DummyFlow(),
+      builder: (_) => PersonalInfoFlow(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Coordinator<DummyFlowEvent>(
+    return Coordinator<PersonalInfoFlowEvent, PersonalInfoFlowState>(
       onNext: ({coordinator, after}) {
         after.when(
-          stepOne: (name) => pushStepTwo(coordinator),
-          stepTwo: (age) => pushStepThree(coordinator),
-          stepThree: (weight) => coordinator.exit(),
+          name: (name) {
+            coordinator.state = coordinator.state.copyWith(name: name);
+            pushStepTwo(coordinator);
+          },
+          age: (age) {
+            coordinator.state = coordinator.state.copyWith(age: age);
+            pushStepThree(coordinator);
+          },
+          weight: (weight) {
+            coordinator.state = coordinator.state.copyWith(weight: weight);
+            coordinator.exit(PersonalInfo(
+              coordinator.state.name,
+              coordinator.state.age,
+              coordinator.state.weight,
+            ));
+          },
         );
       },
       onStart: ({coordinator}) => pushStepOne(coordinator),
+      initialState: PersonalInfoFlowState(),
       child: LoadingScreen(),
     );
   }
 
-  Future<void> pushStepOne(CoordinatorState<DummyFlowEvent> coordinator) async {
+  Future<void> pushStepOne(CoordinatorState coordinator) async {
     // simulate some sort of async loading operation for effect
     await Future.delayed(Duration(seconds: 1));
 
@@ -79,7 +118,7 @@ class DummyFlow extends StatelessWidget {
     );
   }
 
-  void pushStepTwo(CoordinatorState<DummyFlowEvent> coordinator) {
+  void pushStepTwo(CoordinatorState coordinator) {
     coordinator.push(
       MaterialPageRoute(
         builder: (_) => StepTwoScreen(),
@@ -87,7 +126,7 @@ class DummyFlow extends StatelessWidget {
     );
   }
 
-  void pushStepThree(CoordinatorState<DummyFlowEvent> coordinator) {
+  void pushStepThree(CoordinatorState coordinator) {
     coordinator.push(
       MaterialPageRoute(
         builder: (_) => StepThreeScreen(),
@@ -124,7 +163,7 @@ class StepOneScreen extends StatelessWidget {
           child: OutlineButton(
             child: Text('Continue'),
             onPressed: () => Coordinator.of(context).next(
-              after: DummyFlowEvent.stepOne('Sam'),
+              after: PersonalInfoFlowEvent.name('Sam'),
             ),
           ),
         ),
@@ -151,7 +190,7 @@ class StepTwoScreen extends StatelessWidget {
             child: OutlineButton(
               child: Text('Continue'),
               onPressed: () => Coordinator.of(context).next(
-                after: DummyFlowEvent.stepTwo(32),
+                after: PersonalInfoFlowEvent.age(32),
               ),
             ),
           ),
@@ -176,7 +215,7 @@ class StepThreeScreen extends StatelessWidget {
             child: OutlineButton(
               child: Text('Exit'),
               onPressed: () => Coordinator.of(context).next(
-                after: DummyFlowEvent.stepThree(140),
+                after: PersonalInfoFlowEvent.weight(140),
               ),
             ),
           ),

@@ -26,6 +26,7 @@ dependencies:
   flutter_stream_listener: ^1.0.0
   flutter_bloc: ^3.2.0
   freezed_annotation: ^0.7.1
+  provider: ^4.0.4
 
 dev_dependencies:
   flutter_test:
