@@ -48,15 +48,15 @@ class HomeScreen extends StatelessWidget {
 }
 
 @freezed
-abstract class PersonalInfoFlowEvent with _$PersonalInfoFlowEvent {
-  const factory PersonalInfoFlowEvent.name(String name) = _Name;
-  const factory PersonalInfoFlowEvent.age(int age) = _Age;
-  const factory PersonalInfoFlowEvent.weight(double weight) = _Weight;
+abstract class PersonalInfoFlowStep with _$PersonalInfoFlowStep {
+  const factory PersonalInfoFlowStep.name(String name) = _Name;
+  const factory PersonalInfoFlowStep.age(int age) = _Age;
+  const factory PersonalInfoFlowStep.weight(double weight) = _Weight;
 }
 
 @freezed
-abstract class PersonalInfoFlowState with _$PersonalInfoFlowState {
-  const factory PersonalInfoFlowState({
+abstract class PersonalInfoFlowData with _$PersonalInfoFlowData {
+  const factory PersonalInfoFlowData({
     String name,
     int age,
     double weight,
@@ -79,57 +79,60 @@ class PersonalInfoFlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Coordinator<PersonalInfoFlowEvent, PersonalInfoFlowState>(
+    return Coordinator<PersonalInfoFlowStep, PersonalInfoFlowData>(
       onNext: ({coordinator, after}) {
         after.when(
           name: (name) {
-            coordinator.state = coordinator.state.copyWith(name: name);
-            pushStepTwo(coordinator);
+            coordinator.data = coordinator.data.copyWith(name: name);
+            pushAgeStep(coordinator);
           },
           age: (age) {
-            coordinator.state = coordinator.state.copyWith(age: age);
-            pushStepThree(coordinator);
+            coordinator.data = coordinator.data.copyWith(age: age);
+            pushWeightStep(coordinator);
           },
           weight: (weight) {
-            coordinator.state = coordinator.state.copyWith(weight: weight);
+            coordinator.data = coordinator.data.copyWith(weight: weight);
             coordinator.exit(PersonalInfo(
-              coordinator.state.name,
-              coordinator.state.age,
-              coordinator.state.weight,
+              coordinator.data.name,
+              coordinator.data.age,
+              coordinator.data.weight,
             ));
           },
         );
       },
-      onStart: ({coordinator}) => pushStepOne(coordinator),
-      initialState: PersonalInfoFlowState(),
+      onStart: ({coordinator}) => pushNameStep(coordinator),
+      initialData: PersonalInfoFlowData(),
       child: LoadingScreen(),
     );
   }
 
-  Future<void> pushStepOne(CoordinatorState coordinator) async {
+  Future<void> pushNameStep(CoordinatorState coordinator) async {
     // simulate some sort of async loading operation for effect
     await Future.delayed(Duration(seconds: 1));
 
     coordinator.replace(
       MaterialPageRoute(
         settings: RouteSettings(isInitialRoute: true),
-        builder: (_) => StepOneScreen(),
+        builder: (_) => NameScreen(),
       ),
     );
   }
 
-  void pushStepTwo(CoordinatorState coordinator) {
-    coordinator.push(
-      MaterialPageRoute(
-        builder: (_) => StepTwoScreen(),
-      ),
-    );
+  Future<void> pushAgeStep(CoordinatorState coordinator) async {
+    final result = await coordinator.push(SomethingSubflow.route());
+    if (result != null) {
+      coordinator.push(
+        MaterialPageRoute(
+          builder: (_) => AgeScreen(),
+        ),
+      );
+    }
   }
 
-  void pushStepThree(CoordinatorState coordinator) {
+  void pushWeightStep(CoordinatorState coordinator) {
     coordinator.push(
       MaterialPageRoute(
-        builder: (_) => StepThreeScreen(),
+        builder: (_) => WeightScreen(),
       ),
     );
   }
@@ -148,8 +151,8 @@ class LoadingScreen extends StatelessWidget {
   }
 }
 
-class StepOneScreen extends StatelessWidget {
-  const StepOneScreen();
+class NameScreen extends StatelessWidget {
+  const NameScreen();
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +166,7 @@ class StepOneScreen extends StatelessWidget {
           child: OutlineButton(
             child: Text('Continue'),
             onPressed: () => Coordinator.of(context).next(
-              after: PersonalInfoFlowEvent.name('Sam'),
+              after: PersonalInfoFlowStep.name('Sam'),
             ),
           ),
         ),
@@ -172,8 +175,8 @@ class StepOneScreen extends StatelessWidget {
   }
 }
 
-class StepTwoScreen extends StatelessWidget {
-  const StepTwoScreen();
+class AgeScreen extends StatelessWidget {
+  const AgeScreen();
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +193,7 @@ class StepTwoScreen extends StatelessWidget {
             child: OutlineButton(
               child: Text('Continue'),
               onPressed: () => Coordinator.of(context).next(
-                after: PersonalInfoFlowEvent.age(32),
+                after: PersonalInfoFlowStep.age(32),
               ),
             ),
           ),
@@ -200,8 +203,8 @@ class StepTwoScreen extends StatelessWidget {
   }
 }
 
-class StepThreeScreen extends StatelessWidget {
-  const StepThreeScreen();
+class WeightScreen extends StatelessWidget {
+  const WeightScreen();
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +218,85 @@ class StepThreeScreen extends StatelessWidget {
             child: OutlineButton(
               child: Text('Exit'),
               onPressed: () => Coordinator.of(context).next(
-                after: PersonalInfoFlowEvent.weight(140),
+                after: PersonalInfoFlowStep.weight(140),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SomethingSubflow extends StatelessWidget {
+  static Route<String> route() {
+    return MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => SomethingSubflow(),
+    );
+  }
+
+  const SomethingSubflow({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Coordinator<String, int>(
+      initialData: 0,
+      onNext: ({after, coordinator}) {
+        if (after == "first") {
+          coordinator
+              .push(MaterialPageRoute(builder: (_) => SubflowStepTwoScreen()));
+        } else {
+          coordinator.exit("something");
+        }
+      },
+      child: SubflowStepOneScreen(),
+    );
+  }
+}
+
+class SubflowStepOneScreen extends StatelessWidget {
+  const SubflowStepOneScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Subflow: Step one'),
+        actions: <Widget>[CoordinatorCloseButton()],
+      ),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            child: OutlineButton(
+              child: Text('Next'),
+              onPressed: () => Coordinator.of(context).next(
+                after: "first",
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SubflowStepTwoScreen extends StatelessWidget {
+  const SubflowStepTwoScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Subflow: Step two'),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            child: OutlineButton(
+              child: Text('Exit'),
+              onPressed: () => Coordinator.of(context).next(
+                after: "last",
               ),
             ),
           ),

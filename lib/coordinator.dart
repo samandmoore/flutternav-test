@@ -3,29 +3,29 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_stream_listener/flutter_stream_listener.dart';
 
-typedef NextCallback<TEvent, TState> = void Function({
-  CoordinatorState<TEvent, TState> coordinator,
-  TEvent after,
+typedef NextCallback<TStep, TData> = void Function({
+  CoordinatorState<TStep, TData> coordinator,
+  TStep after,
 });
 
-typedef StartCallback<TEvent, TState> = void Function({
-  CoordinatorState<TEvent, TState> coordinator,
+typedef StartCallback<TStep, TData> = void Function({
+  CoordinatorState<TStep, TData> coordinator,
 });
 
-class Coordinator<TEvent, TState> extends StatefulWidget {
-  final TState initialState;
-  final NextCallback<TEvent, TState> onNext;
-  final StartCallback<TEvent, TState> onStart;
+class Coordinator<TStep, TData> extends StatefulWidget {
+  final TData initialData;
+  final NextCallback<TStep, TData> onNext;
+  final StartCallback<TStep, TData> onStart;
   final Widget child;
 
   Coordinator({
     this.onNext,
     this.child,
     this.onStart,
-    @required this.initialState,
-  }) : assert(initialState != null);
+    @required this.initialData,
+  }) : assert(initialData != null);
 
-  static CoordinatorState<TEvent, TState> of<TEvent, TState>(
+  static CoordinatorState<TStep, TData> of<TStep, TData>(
     BuildContext context,
   ) {
     return context
@@ -34,23 +34,22 @@ class Coordinator<TEvent, TState> extends StatefulWidget {
   }
 
   @override
-  CoordinatorState<TEvent, TState> createState() =>
-      CoordinatorState<TEvent, TState>();
+  CoordinatorState<TStep, TData> createState() =>
+      CoordinatorState<TStep, TData>();
 }
 
-class CoordinatorState<TEvent, TState>
-    extends State<Coordinator<TEvent, TState>> {
-  final routingEventController = StreamController<TEvent>.broadcast();
+class CoordinatorState<TStep, TData> extends State<Coordinator<TStep, TData>> {
+  final routingEventController = StreamController<TStep>.broadcast();
   final navigatorKey = GlobalKey<NavigatorState>();
 
-  TState state;
+  TData data;
 
   NavigatorState get navigator => navigatorKey.currentState;
 
   @override
   void initState() {
     super.initState();
-    state = widget.initialState;
+    data = widget.initialData;
   }
 
   @override
@@ -87,7 +86,7 @@ class CoordinatorState<TEvent, TState>
     );
   }
 
-  void next({@required TEvent after}) {
+  void next({@required TStep after}) {
     routingEventController.add(after);
   }
 
@@ -104,26 +103,30 @@ class CoordinatorState<TEvent, TState>
   }
 }
 
-class _CoordinatorStart<TEvent, TState> extends StatefulWidget {
+class _CoordinatorStart<TStep, TData> extends StatefulWidget {
   final Widget child;
-  final StartCallback<TEvent, TState> onStart;
+  final StartCallback<TStep, TData> onStart;
 
   _CoordinatorStart({this.child, this.onStart});
 
   @override
-  _CoordinatorStartState<TEvent, TState> createState() =>
-      _CoordinatorStartState<TEvent, TState>();
+  _CoordinatorStarTData<TStep, TData> createState() =>
+      _CoordinatorStarTData<TStep, TData>();
 }
 
-class _CoordinatorStartState<TEvent, TState>
-    extends State<_CoordinatorStart<TEvent, TState>> {
+class _CoordinatorStarTData<TStep, TData>
+    extends State<_CoordinatorStart<TStep, TData>> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => widget.onStart(
-        coordinator: Coordinator.of<TEvent, TState>(context),
-      ),
+      (_) {
+        if (widget.onStart != null) {
+          widget.onStart(
+            coordinator: Coordinator.of<TStep, TData>(context),
+          );
+        }
+      },
     );
   }
 

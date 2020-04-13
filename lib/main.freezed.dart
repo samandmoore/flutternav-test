@@ -9,8 +9,8 @@ part of 'main.dart';
 
 T _$identity<T>(T value) => value;
 
-class _$PersonalInfoFlowEventTearOff {
-  const _$PersonalInfoFlowEventTearOff();
+class _$PersonalInfoFlowStepTearOff {
+  const _$PersonalInfoFlowStepTearOff();
 
   _Name name(String name) {
     return _Name(
@@ -32,9 +32,9 @@ class _$PersonalInfoFlowEventTearOff {
 }
 
 // ignore: unused_element
-const $PersonalInfoFlowEvent = _$PersonalInfoFlowEventTearOff();
+const $PersonalInfoFlowStep = _$PersonalInfoFlowStepTearOff();
 
-mixin _$PersonalInfoFlowEvent {
+mixin _$PersonalInfoFlowStep {
   @optionalTypeArgs
   Result when<Result extends Object>({
     @required Result name(String name),
@@ -63,19 +63,19 @@ mixin _$PersonalInfoFlowEvent {
   });
 }
 
-abstract class $PersonalInfoFlowEventCopyWith<$Res> {
-  factory $PersonalInfoFlowEventCopyWith(PersonalInfoFlowEvent value,
-          $Res Function(PersonalInfoFlowEvent) then) =
-      _$PersonalInfoFlowEventCopyWithImpl<$Res>;
+abstract class $PersonalInfoFlowStepCopyWith<$Res> {
+  factory $PersonalInfoFlowStepCopyWith(PersonalInfoFlowStep value,
+          $Res Function(PersonalInfoFlowStep) then) =
+      _$PersonalInfoFlowStepCopyWithImpl<$Res>;
 }
 
-class _$PersonalInfoFlowEventCopyWithImpl<$Res>
-    implements $PersonalInfoFlowEventCopyWith<$Res> {
-  _$PersonalInfoFlowEventCopyWithImpl(this._value, this._then);
+class _$PersonalInfoFlowStepCopyWithImpl<$Res>
+    implements $PersonalInfoFlowStepCopyWith<$Res> {
+  _$PersonalInfoFlowStepCopyWithImpl(this._value, this._then);
 
-  final PersonalInfoFlowEvent _value;
+  final PersonalInfoFlowStep _value;
   // ignore: unused_field
-  final $Res Function(PersonalInfoFlowEvent) _then;
+  final $Res Function(PersonalInfoFlowStep) _then;
 }
 
 abstract class _$NameCopyWith<$Res> {
@@ -84,8 +84,7 @@ abstract class _$NameCopyWith<$Res> {
   $Res call({String name});
 }
 
-class __$NameCopyWithImpl<$Res>
-    extends _$PersonalInfoFlowEventCopyWithImpl<$Res>
+class __$NameCopyWithImpl<$Res> extends _$PersonalInfoFlowStepCopyWithImpl<$Res>
     implements _$NameCopyWith<$Res> {
   __$NameCopyWithImpl(_Name _value, $Res Function(_Name) _then)
       : super(_value, (v) => _then(v as _Name));
@@ -111,14 +110,14 @@ class _$_Name with DiagnosticableTreeMixin implements _Name {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'PersonalInfoFlowEvent.name(name: $name)';
+    return 'PersonalInfoFlowStep.name(name: $name)';
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowEvent.name'))
+      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowStep.name'))
       ..add(DiagnosticsProperty('name', name));
   }
 
@@ -195,7 +194,7 @@ class _$_Name with DiagnosticableTreeMixin implements _Name {
   }
 }
 
-abstract class _Name implements PersonalInfoFlowEvent {
+abstract class _Name implements PersonalInfoFlowStep {
   const factory _Name(String name) = _$_Name;
 
   String get name;
@@ -208,7 +207,7 @@ abstract class _$AgeCopyWith<$Res> {
   $Res call({int age});
 }
 
-class __$AgeCopyWithImpl<$Res> extends _$PersonalInfoFlowEventCopyWithImpl<$Res>
+class __$AgeCopyWithImpl<$Res> extends _$PersonalInfoFlowStepCopyWithImpl<$Res>
     implements _$AgeCopyWith<$Res> {
   __$AgeCopyWithImpl(_Age _value, $Res Function(_Age) _then)
       : super(_value, (v) => _then(v as _Age));
@@ -234,14 +233,14 @@ class _$_Age with DiagnosticableTreeMixin implements _Age {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'PersonalInfoFlowEvent.age(age: $age)';
+    return 'PersonalInfoFlowStep.age(age: $age)';
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowEvent.age'))
+      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowStep.age'))
       ..add(DiagnosticsProperty('age', age));
   }
 
@@ -318,7 +317,7 @@ class _$_Age with DiagnosticableTreeMixin implements _Age {
   }
 }
 
-abstract class _Age implements PersonalInfoFlowEvent {
+abstract class _Age implements PersonalInfoFlowStep {
   const factory _Age(int age) = _$_Age;
 
   int get age;
@@ -332,7 +331,7 @@ abstract class _$WeightCopyWith<$Res> {
 }
 
 class __$WeightCopyWithImpl<$Res>
-    extends _$PersonalInfoFlowEventCopyWithImpl<$Res>
+    extends _$PersonalInfoFlowStepCopyWithImpl<$Res>
     implements _$WeightCopyWith<$Res> {
   __$WeightCopyWithImpl(_Weight _value, $Res Function(_Weight) _then)
       : super(_value, (v) => _then(v as _Weight));
@@ -358,14 +357,14 @@ class _$_Weight with DiagnosticableTreeMixin implements _Weight {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'PersonalInfoFlowEvent.weight(weight: $weight)';
+    return 'PersonalInfoFlowStep.weight(weight: $weight)';
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowEvent.weight'))
+      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowStep.weight'))
       ..add(DiagnosticsProperty('weight', weight));
   }
 
@@ -442,15 +441,15 @@ class _$_Weight with DiagnosticableTreeMixin implements _Weight {
   }
 }
 
-abstract class _Weight implements PersonalInfoFlowEvent {
+abstract class _Weight implements PersonalInfoFlowStep {
   const factory _Weight(double weight) = _$_Weight;
 
   double get weight;
   _$WeightCopyWith<_Weight> get copyWith;
 }
 
-class _$PersonalInfoFlowStateTearOff {
-  const _$PersonalInfoFlowStateTearOff();
+class _$PersonalInfoFlowDataTearOff {
+  const _$PersonalInfoFlowDataTearOff();
 
   _State call({String name, int age, double weight}) {
     return _State(
@@ -462,30 +461,30 @@ class _$PersonalInfoFlowStateTearOff {
 }
 
 // ignore: unused_element
-const $PersonalInfoFlowState = _$PersonalInfoFlowStateTearOff();
+const $PersonalInfoFlowData = _$PersonalInfoFlowDataTearOff();
 
-mixin _$PersonalInfoFlowState {
+mixin _$PersonalInfoFlowData {
   String get name;
   int get age;
   double get weight;
 
-  $PersonalInfoFlowStateCopyWith<PersonalInfoFlowState> get copyWith;
+  $PersonalInfoFlowDataCopyWith<PersonalInfoFlowData> get copyWith;
 }
 
-abstract class $PersonalInfoFlowStateCopyWith<$Res> {
-  factory $PersonalInfoFlowStateCopyWith(PersonalInfoFlowState value,
-          $Res Function(PersonalInfoFlowState) then) =
-      _$PersonalInfoFlowStateCopyWithImpl<$Res>;
+abstract class $PersonalInfoFlowDataCopyWith<$Res> {
+  factory $PersonalInfoFlowDataCopyWith(PersonalInfoFlowData value,
+          $Res Function(PersonalInfoFlowData) then) =
+      _$PersonalInfoFlowDataCopyWithImpl<$Res>;
   $Res call({String name, int age, double weight});
 }
 
-class _$PersonalInfoFlowStateCopyWithImpl<$Res>
-    implements $PersonalInfoFlowStateCopyWith<$Res> {
-  _$PersonalInfoFlowStateCopyWithImpl(this._value, this._then);
+class _$PersonalInfoFlowDataCopyWithImpl<$Res>
+    implements $PersonalInfoFlowDataCopyWith<$Res> {
+  _$PersonalInfoFlowDataCopyWithImpl(this._value, this._then);
 
-  final PersonalInfoFlowState _value;
+  final PersonalInfoFlowData _value;
   // ignore: unused_field
-  final $Res Function(PersonalInfoFlowState) _then;
+  final $Res Function(PersonalInfoFlowData) _then;
 
   @override
   $Res call({
@@ -502,7 +501,7 @@ class _$PersonalInfoFlowStateCopyWithImpl<$Res>
 }
 
 abstract class _$StateCopyWith<$Res>
-    implements $PersonalInfoFlowStateCopyWith<$Res> {
+    implements $PersonalInfoFlowDataCopyWith<$Res> {
   factory _$StateCopyWith(_State value, $Res Function(_State) then) =
       __$StateCopyWithImpl<$Res>;
   @override
@@ -510,7 +509,7 @@ abstract class _$StateCopyWith<$Res>
 }
 
 class __$StateCopyWithImpl<$Res>
-    extends _$PersonalInfoFlowStateCopyWithImpl<$Res>
+    extends _$PersonalInfoFlowDataCopyWithImpl<$Res>
     implements _$StateCopyWith<$Res> {
   __$StateCopyWithImpl(_State _value, $Res Function(_State) _then)
       : super(_value, (v) => _then(v as _State));
@@ -544,14 +543,14 @@ class _$_State with DiagnosticableTreeMixin implements _State {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'PersonalInfoFlowState(name: $name, age: $age, weight: $weight)';
+    return 'PersonalInfoFlowData(name: $name, age: $age, weight: $weight)';
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
-      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowState'))
+      ..add(DiagnosticsProperty('type', 'PersonalInfoFlowData'))
       ..add(DiagnosticsProperty('name', name))
       ..add(DiagnosticsProperty('age', age))
       ..add(DiagnosticsProperty('weight', weight));
@@ -581,7 +580,7 @@ class _$_State with DiagnosticableTreeMixin implements _State {
       __$StateCopyWithImpl<_State>(this, _$identity);
 }
 
-abstract class _State implements PersonalInfoFlowState {
+abstract class _State implements PersonalInfoFlowData {
   const factory _State({String name, int age, double weight}) = _$_State;
 
   @override
