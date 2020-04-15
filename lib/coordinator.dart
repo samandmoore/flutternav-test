@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_stream_listener/flutter_stream_listener.dart';
 
 typedef NextCallback<TStep, TData> = void Function({
   CoordinatorState<TStep, TData> coordinator,
@@ -39,7 +38,6 @@ class Coordinator<TStep, TData> extends StatefulWidget {
 }
 
 class CoordinatorState<TStep, TData> extends State<Coordinator<TStep, TData>> {
-  final routingEventController = StreamController<TStep>.broadcast();
   final navigatorKey = GlobalKey<NavigatorState>();
 
   TData data;
@@ -54,7 +52,6 @@ class CoordinatorState<TStep, TData> extends State<Coordinator<TStep, TData>> {
 
   @override
   void dispose() {
-    routingEventController?.close();
     super.dispose();
   }
 
@@ -62,32 +59,23 @@ class CoordinatorState<TStep, TData> extends State<Coordinator<TStep, TData>> {
   Widget build(BuildContext context) {
     return _InheritedCoordinator(
       data: this,
-      child: StreamListener(
-        stream: routingEventController.stream,
-        onData: (data) {
-          widget.onNext(
-            coordinator: this,
-            after: data,
+      child: Navigator(
+        key: navigatorKey,
+        onGenerateRoute: (settings) {
+          return MaterialPageRoute(
+            settings: RouteSettings(isInitialRoute: true),
+            builder: (context) => _CoordinatorStart(
+              onStart: widget.onStart,
+              child: widget.child,
+            ),
           );
         },
-        child: Navigator(
-          key: navigatorKey,
-          onGenerateRoute: (settings) {
-            return MaterialPageRoute(
-              settings: RouteSettings(isInitialRoute: true),
-              builder: (context) => _CoordinatorStart(
-                onStart: widget.onStart,
-                child: widget.child,
-              ),
-            );
-          },
-        ),
       ),
     );
   }
 
   void next({@required TStep after}) {
-    routingEventController.add(after);
+    widget.onNext(coordinator: this, after: after);
   }
 
   void exit<T>([T result]) {
@@ -119,15 +107,13 @@ class _CoordinatorStarTData<TStep, TData>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        if (widget.onStart != null) {
-          widget.onStart(
-            coordinator: Coordinator.of<TStep, TData>(context),
-          );
-        }
-      },
-    );
+    if (widget.onStart != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onStart(
+          coordinator: Coordinator.of<TStep, TData>(context),
+        );
+      });
+    }
   }
 
   @override
