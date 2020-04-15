@@ -17,7 +17,7 @@ class Coordinator<TStep, TData> extends StatefulWidget {
   final StartCallback<TStep, TData> onStart;
   final Widget child;
 
-  Coordinator({
+  const Coordinator({
     this.onNext,
     this.child,
     this.onStart,
@@ -27,14 +27,11 @@ class Coordinator<TStep, TData> extends StatefulWidget {
   static CoordinatorState<TStep, TData> of<TStep, TData>(
     BuildContext context,
   ) {
-    return context
-        .dependOnInheritedWidgetOfExactType<_InheritedCoordinator>()
-        .data;
+    return context.dependOnInheritedWidgetOfExactType<_InheritedCoordinator>().data;
   }
 
   @override
-  CoordinatorState<TStep, TData> createState() =>
-      CoordinatorState<TStep, TData>();
+  CoordinatorState<TStep, TData> createState() => CoordinatorState<TStep, TData>();
 }
 
 class CoordinatorState<TStep, TData> extends State<Coordinator<TStep, TData>> {
@@ -63,7 +60,7 @@ class CoordinatorState<TStep, TData> extends State<Coordinator<TStep, TData>> {
         key: navigatorKey,
         onGenerateRoute: (settings) {
           return MaterialPageRoute(
-            settings: RouteSettings(isInitialRoute: true),
+            settings: const RouteSettings(isInitialRoute: true),
             builder: (context) => _CoordinatorStart(
               onStart: widget.onStart,
               child: widget.child,
@@ -95,15 +92,13 @@ class _CoordinatorStart<TStep, TData> extends StatefulWidget {
   final Widget child;
   final StartCallback<TStep, TData> onStart;
 
-  _CoordinatorStart({this.child, this.onStart});
+  const _CoordinatorStart({this.child, this.onStart});
 
   @override
-  _CoordinatorStarTData<TStep, TData> createState() =>
-      _CoordinatorStarTData<TStep, TData>();
+  _CoordinatorStartState<TStep, TData> createState() => _CoordinatorStartState<TStep, TData>();
 }
 
-class _CoordinatorStarTData<TStep, TData>
-    extends State<_CoordinatorStart<TStep, TData>> {
+class _CoordinatorStartState<TStep, TData> extends State<_CoordinatorStart<TStep, TData>> {
   @override
   void initState() {
     super.initState();
@@ -128,7 +123,7 @@ class _InheritedCoordinator extends InheritedWidget {
     return true;
   }
 
-  _InheritedCoordinator({
+  const _InheritedCoordinator({
     Key key,
     Widget child,
     this.data,
